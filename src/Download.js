@@ -9,8 +9,14 @@ class Download {
     this.url = params.url;
     let split = this.url.split('/').slice(-1);
     this.id = split[split.length - 1];
+    this.length = 0;
     this.csv = params.csv;
     this.output = path.join(__dirname, 'dist');
+    this.paths = {
+      caption: `dist/captions/${this.id}.xml`,
+      poster: `dist/posters/${this.id}.jpg`,
+      video: `dist/vids/${this.id}.mp4`
+    };
     console.log(chalk.magenta(`> New download -> ${this.id}`));
   }
 
@@ -54,7 +60,7 @@ class Download {
         got(track.baseUrl)
           .then((response) => {
             console.log(chalk.blue('  Writing captions...'));
-            fs.writeFileSync(`dist/captions/${this.id}.xml`, response.body);
+            fs.writeFileSync(this.paths.caption, response.body);
             console.log(chalk.green('  Done.'));
             console.log('');
             resolve();
@@ -78,20 +84,21 @@ class Download {
 
         console.log(chalk.blue(`  Downloading Poster...`));
         var dl = got.stream(poster)
-        dl.pipe(fs.createWriteStream(`dist/posters/${this.id}.jpg`))
+        dl.pipe(fs.createWriteStream(this.paths.poster))
         dl.on('response', (response) => {
-            console.log(chalk.blue(`  Writing Meta...`));
-            this.csv.write({
-              id: this.id,
-              title: info.title,
-              keywords: JSON.stringify(info.keywords),
-              length: info.length_seconds
-            });
+          console.log(chalk.blue(`  Writing Meta...`));
+          this.length = info.length_seconds;
+          this.csv.write({
+            id: this.id,
+            title: info.title,
+            keywords: JSON.stringify(info.keywords),
+            length: info.length_seconds
+          });
 
-            console.log(chalk.green('  Done.'));
-            console.log('');
+          console.log(chalk.green('  Done.'));
+          console.log('');
 
-            resolve();
+          resolve();
         });
       });
     });
@@ -103,7 +110,7 @@ class Download {
       let video = ytdl(this.url, {
         filter: (format) => format.container === 'mp4'
       })
-      video.pipe(fs.createWriteStream(`dist/vids/${this.id}.mp4`));
+      video.pipe(fs.createWriteStream(this.paths.video));
       video.on('end', () => {
         console.log(chalk.green('  Done.'));
         console.log('');

@@ -2,5 +2,6 @@
 dist/captions/*.xml
 dist/posters/*.jpg
 dist/vids/*.mp4
+dist/vtt/*.vtt
 dist/meta.csv
 node_modules
