@@ -1,0 +1,6 @@
+.DS_Store
+dist/captions/*.xml
+dist/posters/*.jpg
+dist/vids/*.mp4
+dist/meta.csv
+node_modules
